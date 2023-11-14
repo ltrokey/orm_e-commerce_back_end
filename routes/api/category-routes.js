@@ -59,8 +59,6 @@ router.post("/", async (req, res) => {
   }
 });
 
-module.exports = router;
-
 //UPDATE
 router.put("/:id", async (req, res) => {
   try {
@@ -72,38 +70,12 @@ router.put("/:id", async (req, res) => {
       return res.status(404).json({ message: "Category not found." });
     }
 
-    const { category_name } = req.body;
-
-    const existingCategory = await Category.findOne({
-      where: {
-        category_name: category_name,
-      },
-    });
-
-    if (existingCategory) {
-      return res.status(400).json({
-        message: "Category name already exists.",
-      });
-    }
-
-    const [numRowsUpdated] = await Category.update(req.body, {
-      where: {
-        id: categoryId,
-      },
-    });
-
-    if (numRowsUpdated === 0) {
-      return res.status(500).json({
-        message: "Category not updated. Internal Server Error.",
-      });
-    }
-
     return res.status(200).json({
       message: "Category updated successfully.",
     });
   } catch (err) {
     console.error("Error:", err);
-    return res.status(500).json(err);
+    return res.status(500).json(err.message || "Internal Server Error");
   }
 });
 
