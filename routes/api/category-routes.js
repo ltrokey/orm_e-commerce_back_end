@@ -4,6 +4,7 @@ const { Category, Product } = require("../../models");
 router.get("/", async (req, res) => {
   try {
     const categories = await Category.findAll({
+      order: [['id', 'ASC']],
       include: { model: Product },
     });
     return res.json(categories);
@@ -15,6 +16,7 @@ router.get("/", async (req, res) => {
 router.get("/:id", async (req, res) => {
   try {
     const categoryData = await Category.findByPk(req.params.id, {
+      order: [['id', 'ASC']],
       include: { model: Product },
     });
     return !categoryData

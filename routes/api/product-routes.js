@@ -1,36 +1,33 @@
-const router = require('express').Router();
-const { Product, Category, Tag, ProductTag } = require('../../models');
+const router = require("express").Router();
+const { Product, Category, Tag, ProductTag } = require("../../models");
 
-router.get('/', async (req, res) => {
-  try{
+router.get("/", async (req, res) => {
+  try {
     const products = await Product.findAll({
-      include: [
-        {model: Category},
-        {model: Tag},
-      ]
-    })
-    return res.json(products)
+      order: [['id', 'ASC']],
+      include: [{ model: Category }, { model: Tag }],
+    });
+    return res.json(products);
   } catch (err) {
-    res.status(500).json(err)
+    res.status(500).json(err);
   }
 });
 
-router.get('/:id', async (req, res) => {
-  try{
+router.get("/:id", async (req, res) => {
+  try {
     const productData = await Product.findByPk(req.params.id, {
-      include: [
-        {model: Category},
-        {model: Tag},
-      ]
-    })
-    return res.json(productData)
+      include: [{ model: Category }, { model: Tag }],
+    });
+    return !productData
+      ? res.status(404).json({ message: "Product not found." })
+      : res.json(productData);
   } catch (err) {
-    res.status(500).json(err)
+    res.status(500).json(err);
   }
 });
 
 // create new product
-router.post('/', (req, res) => {
+router.post("/", (req, res) => {
   /* req.body should look like this...
     {
       product_name: "Basketball",
@@ -62,7 +59,7 @@ router.post('/', (req, res) => {
 });
 
 // update product
-router.put('/:id', (req, res) => {
+router.put("/:id", (req, res) => {
   // update product data
   Product.update(req.body, {
     where: {
@@ -71,9 +68,8 @@ router.put('/:id', (req, res) => {
   })
     .then((product) => {
       if (req.body.tagIds && req.body.tagIds.length) {
-
         ProductTag.findAll({
-          where: { product_id: req.params.id }
+          where: { product_id: req.params.id },
         }).then((productTags) => {
           // create filtered list of new tag_ids
           const productTagIds = productTags.map(({ tag_id }) => tag_id);
@@ -106,7 +102,7 @@ router.put('/:id', (req, res) => {
     });
 });
 
-router.delete('/:id', (req, res) => {
+router.delete("/:id", (req, res) => {
   // delete one product by its `id` value
 });
 
