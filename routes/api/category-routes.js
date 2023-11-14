@@ -1,11 +1,12 @@
 const router = require("express").Router();
 const { Category, Product } = require("../../models");
 
+// GET All Categories
 router.get("/", async (req, res) => {
   try {
     const categories = await Category.findAll({
       order: [["id", "ASC"]],
-      include: { model: Product, order: [["id", "ASC"]] }, // Order within the Product model
+      include: { model: Product, order: [["id", "ASC"]] },
     });
     return res.status(200).json(categories);
   } catch (err) {
@@ -13,10 +14,11 @@ router.get("/", async (req, res) => {
   }
 });
 
+//GET Category by id
 router.get("/:id", async (req, res) => {
   try {
     const categoryData = await Category.findByPk(req.params.id, {
-      include: { model: Product, order: [["id", "ASC"]] }, // Order within the Product model
+      include: { model: Product, order: [["id", "ASC"]] },
     });
     if (!categoryData) {
       return res.status(404).json({ message: "Category not found." });
@@ -28,17 +30,103 @@ router.get("/:id", async (req, res) => {
   }
 });
 
+// CREATE
+router.post("/", async (req, res) => {
+  try {
+    const { category_name } = req.body;
 
-router.post("/", (req, res) => {
-  // create a new category
+    const existingCategory = await Category.findOne({
+      where: { category_name: category_name },
+    });
+
+    if (existingCategory) {
+      return res.status(400).json({
+        message: "Category with the same name already exists.",
+      });
+    }
+
+    const newCategory = await Category.create({
+      category_name: category_name,
+    });
+
+    return res.status(201).json({
+      message: "Category created successfully.",
+      category: newCategory,
+    });
+  } catch (err) {
+    console.error("Error:", err);
+    return res.status(500).json({ message: "Internal Server Error" });
+  }
 });
 
-router.put("/:id", (req, res) => {
-  // update a category by its `id` value
+module.exports = router;
+
+//UPDATE
+router.put("/:id", async (req, res) => {
+  try {
+    const categoryId = req.params.id;
+
+    const category = await Category.findByPk(categoryId);
+
+    if (!category) {
+      return res.status(404).json({ message: "Category not found." });
+    }
+
+    const { category_name } = req.body;
+
+    const existingCategory = await Category.findOne({
+      where: {
+        category_name: category_name,
+      },
+    });
+
+    if (existingCategory) {
+      return res.status(400).json({
+        message: "Category name already exists.",
+      });
+    }
+
+    const [numRowsUpdated] = await Category.update(req.body, {
+      where: {
+        id: categoryId,
+      },
+    });
+
+    if (numRowsUpdated === 0) {
+      return res.status(500).json({
+        message: "Category not updated. Internal Server Error.",
+      });
+    }
+
+    return res.status(200).json({
+      message: "Category updated successfully.",
+    });
+  } catch (err) {
+    console.error("Error:", err);
+    return res.status(500).json(err);
+  }
 });
 
-router.delete("/:id", (req, res) => {
-  // delete a category by its `id` value
+// DELETE
+router.delete("/:id", async (req, res) => {
+  try {
+    const categoryId = req.params.id;
+
+    const category = await Category.findByPk(categoryId);
+    if (!category) {
+      return res.status(404).json({ message: "Category not found." });
+    }
+
+    await Category.destroy({
+      where: {
+        id: categoryId,
+      },
+    });
+
+    return res.status(200).json({ message: "Category deleted successfully." });
+  } catch (err) {
+    return res.status(500).json(err);
+  }
 });
 
 module.exports = router;
