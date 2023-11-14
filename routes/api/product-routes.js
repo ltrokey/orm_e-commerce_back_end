@@ -7,9 +7,9 @@ router.get("/", async (req, res) => {
       order: [['id', 'ASC']],
       include: [{ model: Category }, { model: Tag }],
     });
-    return res.json(products);
+    return res.status(200).json(products);
   } catch (err) {
-    res.status(500).json(err);
+    return res.status(500).json(err);
   }
 });
 
@@ -18,13 +18,16 @@ router.get("/:id", async (req, res) => {
     const productData = await Product.findByPk(req.params.id, {
       include: [{ model: Category }, { model: Tag }],
     });
-    return !productData
-      ? res.status(404).json({ message: "Product not found." })
-      : res.json(productData);
+    if (!productData) {
+      return res.status(404).json({ message: "Product not found." });
+    } else {
+      return res.status(200).json(productData);
+    }
   } catch (err) {
-    res.status(500).json(err);
+    return res.status(500).json(err);
   }
 });
+
 
 // create new product
 router.post("/", (req, res) => {
