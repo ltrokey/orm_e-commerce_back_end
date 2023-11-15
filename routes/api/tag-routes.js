@@ -27,32 +27,58 @@ router.get("/:id", async (req, res) => {
   }
 });
 
-router.post("/", (req, res) => {
-  // create a new tag
-});
+router.post("/", (req, res) => {});
 
-router.put("/:id", (req, res) => {
-  // update a tag's name by its `id` value
+router.put("/:id", async (req, res) => {
+  try {
+    const tagId = req.params.id;
+
+    const tag = await Tag.findByPk(tagId);
+
+    if (!tag) {
+      return res.status(404).json({ message: "Tag not found." });
+    }
+
+    const [numRowsUpdated] = await Tag.update(req.body, {
+      where: { id: tagId },
+    });
+
+    if (numRowsUpdated === 0) {
+      return res
+        .status(404)
+        .json({ message: "Update unsuccessful, please update an item." });
+    }
+
+    const fetchedUpdatedTag = await Tag.findByPk(tagId);
+
+    return res.status(200).json({
+      message: "Tag updated successfully.",
+      category: fetchedUpdatedTag,
+    });
+  } catch (err) {
+    console.error("Error:", err);
+    return res.status(500).json(err.message || "Internal Server Error");
+  }
 });
 
 router.delete("/:id", async (req, res) => {
   try {
-    const tagId = req.params.id
+    const tagId = req.params.id;
 
-    const tag = await Category.findByPk(tagId)
-    if(!tag) {
-      return res.status(404).json({message: "Tag not found."})
+    const tag = await Category.findByPk(tagId);
+    if (!tag) {
+      return res.status(404).json({ message: "Tag not found." });
     }
 
     await Tag.destroy({
       where: {
         id: tagId,
       },
-    })
+    });
 
-    return res.status(200).json({message: "Tag deleted successfully"})
+    return res.status(200).json({ message: "Tag deleted successfully" });
   } catch (err) {
-    return res.status(500).json(err)
+    return res.status(500).json(err);
   }
 });
 

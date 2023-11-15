@@ -92,7 +92,7 @@ router.put("/:id", async (req, res) => {
     if (numRowsUpdated === 0) {
       return res
         .status(404)
-        .json({ message: "Update unsuccessful, please update one item." });
+        .json({ message: "Update unsuccessful, please update an item." });
     }
 
     if (req.body.tagIds && req.body.tagIds.length) {

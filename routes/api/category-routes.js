@@ -59,7 +59,7 @@ router.post("/", async (req, res) => {
   }
 });
 
-//UPDATE
+// UPDATE
 router.put("/:id", async (req, res) => {
   try {
     const categoryId = req.params.id;
@@ -70,9 +70,15 @@ router.put("/:id", async (req, res) => {
       return res.status(404).json({ message: "Category not found." });
     }
 
-    const updatedCategory = await Category.update(req.body, {
+    const [numRowsUpdated] = await Category.update(req.body, {
       where: { id: categoryId },
     });
+
+    if (numRowsUpdated === 0) {
+      return res
+        .status(404)
+        .json({ message: "Update unsuccessful, please update an item." });
+    }
 
     const fetchedUpdatedCategory = await Category.findByPk(categoryId);
 
