@@ -1,5 +1,5 @@
 const router = require("express").Router();
-const { Tag, Product, ProductTag } = require("../../models");
+const { Tag, Product, ProductTag, Category } = require("../../models");
 
 router.get("/", async (req, res) => {
   try {
@@ -35,8 +35,25 @@ router.put("/:id", (req, res) => {
   // update a tag's name by its `id` value
 });
 
-router.delete("/:id", (req, res) => {
-  // delete on tag by its `id` value
+router.delete("/:id", async (req, res) => {
+  try {
+    const tagId = req.params.id
+
+    const tag = await Category.findByPk(tagId)
+    if(!tag) {
+      return res.status(404).json({message: "Tag not found."})
+    }
+
+    await Tag.destroy({
+      where: {
+        id: tagId,
+      },
+    })
+
+    return res.status(200).json({message: "Tag deleted successfully"})
+  } catch (err) {
+    return res.status(500).json(err)
+  }
 });
 
 module.exports = router;
