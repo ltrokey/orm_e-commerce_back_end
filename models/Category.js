@@ -23,34 +23,6 @@ Category.init(
     underscored: true,
     modelName: "category",
   },
-  {
-    hooks: {
-      beforeUpdate: async (updatedCategory) => {
-        const { category_name, id } = updatedCategory;
-
-        const existingCategory = await Category.findOne({
-          where: {
-            category_name,
-            id: { [sequelize.Op.not]: id },
-          },
-        });
-
-        if (existingCategory) {
-          throw new Error("Category with the updated name already exists.");
-        }
-
-        const [numRowsUpdated] = await Category.update(updatedCategory, {
-          where: {
-            id,
-          },
-        });
-
-        if (numRowsUpdated === 0) {
-          throw new Error("Category not updated. Internal Server Error.");
-        }
-      },
-    },
-  }
 );
 
 module.exports = Category;

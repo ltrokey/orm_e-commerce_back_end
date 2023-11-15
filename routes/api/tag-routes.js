@@ -1,6 +1,7 @@
 const router = require("express").Router();
 const { Tag, Product, ProductTag, Category } = require("../../models");
 
+//GET All Tags
 router.get("/", async (req, res) => {
   try {
     const tags = await Tag.findAll({
@@ -13,6 +14,7 @@ router.get("/", async (req, res) => {
   }
 });
 
+//GET Tag by id
 router.get("/:id", async (req, res) => {
   try {
     const tagData = await Tag.findByPk(req.params.id, {
@@ -27,8 +29,36 @@ router.get("/:id", async (req, res) => {
   }
 });
 
-router.post("/", (req, res) => {});
+// CREATE
+router.post("/", async (req, res) => {
+  try{
+    const { tag_name } = req.body;
 
+    const existingTag = await Tag.findOne({
+      where: { tag_name: tag_name},
+    });
+
+    if (existingTag) {
+      return res.status(400).json({
+        message: "Tag with the same name already exists.",
+      });
+    }
+
+    const NewTag = await Tag.create({
+      tag_name: tag_name,
+    });
+
+    return res.status(201).json({
+      message: "Tag created successfully.",
+      category: NewTag,
+    })
+  } catch (err) {
+    console.error("Error:", err);
+    return res.status(500).json({ message: "Internal Server Error" });
+  }
+});
+
+// UPDATE
 router.put("/:id", async (req, res) => {
   try {
     const tagId = req.params.id;
@@ -61,6 +91,7 @@ router.put("/:id", async (req, res) => {
   }
 });
 
+// DELETE
 router.delete("/:id", async (req, res) => {
   try {
     const tagId = req.params.id;
