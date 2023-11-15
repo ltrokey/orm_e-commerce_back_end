@@ -67,13 +67,11 @@ router.post("/", async (req, res) => {
     console.error(err);
 
     if (err.name === "SequelizeValidationError") {
-
       res.status(400).json({
         message: "Validation error. Please check your input.",
         error: err.message,
       });
     } else {
-
       res.status(500).json({
         message: "Internal Server Error. Something went wrong.",
         error: err.message,
@@ -81,7 +79,6 @@ router.post("/", async (req, res) => {
     }
   }
 });
-
 
 // UPDATE
 router.put("/:id", async (req, res) => {

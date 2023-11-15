@@ -70,8 +70,15 @@ router.put("/:id", async (req, res) => {
       return res.status(404).json({ message: "Category not found." });
     }
 
+    const updatedCategory = await Category.update(req.body, {
+      where: { id: categoryId },
+    });
+
+    const fetchedUpdatedCategory = await Category.findByPk(categoryId);
+
     return res.status(200).json({
       message: "Category updated successfully.",
+      category: fetchedUpdatedCategory,
     });
   } catch (err) {
     console.error("Error:", err);
