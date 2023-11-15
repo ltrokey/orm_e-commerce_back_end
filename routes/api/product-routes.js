@@ -31,31 +31,55 @@ router.get("/:id", async (req, res) => {
 });
 
 // CREATE
-router.post("/", (req, res) => {
-  const { product_name, price, stock, tagIds } = req.body;
+router.post("/", async (req, res) => {
+  try {
+    const { product_name, price, stock, tagIds, category_id } = req.body;
 
-  Product.create({
-    product_name,
-    price,
-    stock,
-  })
-    .then((product) => {
-      // if there's product tags, we need to create pairings to bulk create in the ProductTag model
-      if (tagIds && tagIds.length) {
-        const productTagIdArr = tagIds.map((tag_id) => ({
-          product_id: product.id,
-          tag_id,
-        }));
-        return ProductTag.bulkCreate(productTagIdArr);
-      }
-      // if no product tags, just respond
-      res.status(200).json(product);
-    })
-    .then((productTagIds) => res.status(200).json(productTagIds))
-    .catch((err) => {
-      console.log(err);
-      res.status(400).json(err);
+    const product = await Product.create({
+      product_name,
+      price,
+      stock,
+      category_id,
     });
+
+    if (tagIds && tagIds.length) {
+      const productTagIdArr = tagIds.map((tag_id) => ({
+        product_id: product.id,
+        tag_id,
+      }));
+
+      await ProductTag.bulkCreate(productTagIdArr);
+    }
+
+    if (category_id) {
+      await product.setCategory(category_id);
+    }
+
+    const createdProduct = await Product.findByPk(product.id, {
+      include: [{ model: Category }, { model: Tag }],
+    });
+
+    res.status(200).json({
+      message: "Product successfully created.",
+      product: createdProduct,
+    });
+  } catch (err) {
+    console.error(err);
+
+    if (err.name === "SequelizeValidationError") {
+
+      res.status(400).json({
+        message: "Validation error. Please check your input.",
+        error: err.message,
+      });
+    } else {
+
+      res.status(500).json({
+        message: "Internal Server Error. Something went wrong.",
+        error: err.message,
+      });
+    }
+  }
 });
 
 
