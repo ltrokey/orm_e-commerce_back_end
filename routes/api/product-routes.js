@@ -83,7 +83,14 @@ router.post("/", async (req, res) => {
 // UPDATE
 router.put("/:id", async (req, res) => {
   try {
-    const [numRowsUpdated] = await Product.update(req.body, {
+    const { product_name, price, stock, tagIds } = req.body;
+
+    const updatedFields = {};
+    if (product_name) updatedFields.product_name = product_name;
+    if (price) updatedFields.price = price;
+    if (stock) updatedFields.stock = stock;
+
+    const [numRowsUpdated] = await Product.update(updatedFields, {
       where: {
         id: req.params.id,
       },
@@ -95,13 +102,13 @@ router.put("/:id", async (req, res) => {
         .json({ message: "Update unsuccessful, please update an item." });
     }
 
-    if (req.body.tagIds && req.body.tagIds.length) {
+    if (tagIds && tagIds.length) {
       const productTags = await ProductTag.findAll({
         where: { product_id: req.params.id },
       });
 
       const productTagIds = productTags.map(({ tag_id }) => tag_id);
-      const newProductTags = req.body.tagIds
+      const newProductTags = tagIds
         .filter((tag_id) => !productTagIds.includes(tag_id))
         .map((tag_id) => ({
           product_id: req.params.id,
@@ -109,7 +116,7 @@ router.put("/:id", async (req, res) => {
         }));
 
       const productTagsToRemove = productTags
-        .filter(({ tag_id }) => !req.body.tagIds.includes(tag_id))
+        .filter(({ tag_id }) => !tagIds.includes(tag_id))
         .map(({ id }) => id);
 
       await Promise.all([

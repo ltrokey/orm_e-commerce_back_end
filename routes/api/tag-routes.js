@@ -31,11 +31,11 @@ router.get("/:id", async (req, res) => {
 
 // CREATE
 router.post("/", async (req, res) => {
-  try{
+  try {
     const { tag_name } = req.body;
 
     const existingTag = await Tag.findOne({
-      where: { tag_name: tag_name},
+      where: { tag_name: tag_name },
     });
 
     if (existingTag) {
@@ -51,7 +51,7 @@ router.post("/", async (req, res) => {
     return res.status(201).json({
       message: "Tag created successfully.",
       category: NewTag,
-    })
+    });
   } catch (err) {
     console.error("Error:", err);
     return res.status(500).json({ message: "Internal Server Error" });
