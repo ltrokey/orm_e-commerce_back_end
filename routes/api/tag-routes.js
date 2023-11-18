@@ -96,7 +96,7 @@ router.delete("/:id", async (req, res) => {
   try {
     const tagId = req.params.id;
 
-    const tag = await Category.findByPk(tagId);
+    const tag = await Tag.findByPk(tagId);
     if (!tag) {
       return res.status(404).json({ message: "Tag not found." });
     }
